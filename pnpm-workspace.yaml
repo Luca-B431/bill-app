@@ -1,3 +1,10 @@
 packages:
-  - "back"
-  - "front"
+  - back
+  - front
+onlyBuiltDependencies:
+  - bcrypt
+  - core-js
+  - core-js-pure
+  - es5-ext
+  - fsevents
+  - sqlite3

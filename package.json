@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "test": "pnpm -F \"front\" test"
+    "test": "pnpm -F \"front\" test",
+    "dev": "pnpm -F \"*\" dev"
   },
   "keywords": [],
   "author": "",
