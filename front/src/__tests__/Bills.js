@@ -25,7 +25,9 @@ describe("Given I am connected as an employee", () => {
       const root = document.createElement("div");
       root.setAttribute("id", "root");
       document.body.append(root);
+
       router();
+      // OK
       window.onNavigate(ROUTES_PATH.Bills);
       await waitFor(() => screen.getByTestId("icon-window"));
       const windowIcon = screen.getByTestId("icon-window");
@@ -38,7 +40,7 @@ describe("Given I am connected as an employee", () => {
           /^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/i
         )
         .map((a) => a.innerHTML);
-      const antiChrono = (a, b) => (a < b ? 1 : -1);
+      const antiChrono = (a, b) => (a < b ? 1 : 0);
       const datesSorted = [...dates].sort(antiChrono);
       expect(dates).toEqual(datesSorted);
     });
