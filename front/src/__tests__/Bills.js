@@ -31,7 +31,9 @@ describe("Given I am connected as an employee", () => {
       window.onNavigate(ROUTES_PATH.Bills);
       await waitFor(() => screen.getByTestId("icon-window"));
       const windowIcon = screen.getByTestId("icon-window");
-      //to-do write expect expression
+
+      // ajout de la classe active-icon pour valider le highlighted test
+      expect(windowIcon.classList.contains("active-icon")).toBe(true);
     });
     test("Then bills should be ordered from earliest to latest", () => {
       document.body.innerHTML = BillsUI({ data: bills });
@@ -44,5 +46,29 @@ describe("Given I am connected as an employee", () => {
       const datesSorted = [...dates].sort(antiChrono);
       expect(dates).toEqual(datesSorted);
     });
+  });
+});
+
+// Test d'intégration GET Bills
+describe("Given that i'm a user connected as an employee", () => {
+  test("Then it should fetch bills from mock API GET", async () => {
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        type: "Employee",
+        email: "a@a",
+      })
+    );
+    const root = document.createElement("div");
+    root.setAttribute("id", "root");
+    document.body.append(root);
+    router();
+    window.onNavigate(ROUTES_PATH.Bills);
+    const title = await screen.getByText("Mes notes de frais");
+    expect(title).toBeTruthy();
+    const bills = await screen.getByTestId("tbody");
+    expect(bills).toBeTruthy();
+    const newBill = await screen.getByTestId("btn-new-bill");
+    expect(newBill).toBeTruthy();
   });
 });

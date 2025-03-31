@@ -84,7 +84,6 @@ export default class {
 
   handleClickIconEye = () => {
     const billUrl = $("#icon-eye-d").attr("data-bill-url");
-    const imgWidth = Math.floor($("#modaleFileAdmin1").width() * 0.8);
     $("#modaleFileAdmin1")
       .find(".modal-body")
       .html(
@@ -106,14 +105,18 @@ export default class {
       $(".vertical-navbar").css({ height: "150vh" });
       this.counter++;
     } else {
-      $(`#open-bill${bill.id}`).css({ background: "#0D5AE5" });
+      bills.forEach((b) => {
+        $(`#open-bill${b.id}`).css({ background: "#0D5AE5" });
+        $(`#open-bill${bill.id}`).css({ background: "#2A2B35" });
 
-      $(".dashboard-right-container div").html(`
-        <div id="big-billed-icon" data-testid="big-billed-icon"> ${BigBilledIcon} </div>
-      `);
-      $(".vertical-navbar").css({ height: "120vh" });
+        $(".dashboard-right-container div").html(`
+          <div id="big-billed-icon" data-testid="big-billed-icon">${BigBilledIcon}</div>
+        `);
+      });
+
       this.counter++;
     }
+
     $("#icon-eye-d").click(this.handleClickIconEye);
     $("#btn-accept-bill").click((e) => this.handleAcceptSubmit(e, bill));
     $("#btn-refuse-bill").click((e) => this.handleRefuseSubmit(e, bill));
@@ -139,27 +142,51 @@ export default class {
     this.onNavigate(ROUTES_PATH["Dashboard"]);
   };
 
+  // SWITCH DE FONCTION SANS COMPTEUR, MEILLEURE GESTION DES CLICKS
   handleShowTickets(e, bills, index) {
-    if (this.counter === undefined || this.index !== index) this.counter = 0;
-    if (this.index === undefined || this.index !== index) this.index = index;
-    if (this.counter % 2 === 0) {
-      $(`#arrow-icon${this.index}`).css({ transform: "rotate(0deg)" });
-      $(`#status-bills-container${this.index}`).html(
-        cards(filteredBills(bills, getStatus(this.index)))
-      );
-      this.counter++;
+    // Si 'this.toggles' n'est pas défini, on l'initialise comme un objet vide
+    if (!this.toggles) this.toggles = {}; // Stocke l'état d'ouverture par index
+
+    // On alterne l'état d'ouverture/fermeture (true/false) en fonction de l'index
+    this.toggles[index] = !this.toggles[index]; // Toggle ouvert/fermé
+
+    // Récupère l'élément HTML pour l'icône de flèche correspondant à cet index
+    const arrowIcon = document.getElementById(`arrow-icon${index}`);
+    // Récupère l'élément HTML qui contiendra le contenu des tickets
+    const statusContainer = document.getElementById(
+      `status-bills-container${index}`
+    );
+
+    // Si le toggle pour cet index est true (ouvert), on met à jour l'interface
+    if (this.toggles[index]) {
+      // La flèche est pointée vers le bas (0 degrés)
+      arrowIcon.style.transform = "rotate(0deg)";
+      // On remplace le contenu du conteneur par les cartes des tickets filtrés
+      statusContainer.innerHTML = cards(filteredBills(bills, getStatus(index)));
     } else {
-      $(`#arrow-icon${this.index}`).css({ transform: "rotate(90deg)" });
-      $(`#status-bills-container${this.index}`).html("");
-      this.counter++;
+      // Si le toggle est false (fermé), on met la flèche à 90 degrés
+      arrowIcon.style.transform = "rotate(90deg)";
+      // On vide le contenu du conteneur
+      statusContainer.innerHTML = "";
     }
 
+    // Parcours tous les tickets (bills) pour ajouter un événement 'click' sur chaque bouton
     bills.forEach((bill) => {
-      $(`#open-bill${bill.id}`).click((e) =>
-        this.handleEditTicket(e, bill, bills)
-      );
+      // On récupère le bouton qui ouvre le ticket (avec son ID unique)
+      const btn = document.getElementById(`open-bill${bill.id}`);
+      if (btn) {
+        // On remplace l'élément par une nouvelle copie (pour supprimer les anciens écouteurs)
+        btn.replaceWith(btn.cloneNode(true)); // Supprime les anciens écouteurs
+        // Ajoute un nouvel écouteur d'événement sur le bouton pour gérer l'édition du ticket
+        document
+          .getElementById(`open-bill${bill.id}`)
+          .addEventListener("click", (e) =>
+            this.handleEditTicket(e, bill, bills)
+          );
+      }
     });
 
+    // Retourne la liste des bills (tickets)
     return bills;
   }
 
