@@ -21,7 +21,6 @@ export default () => {
 
     // Si l'utilisateur navigue vers la page Login
     if (pathname === ROUTES_PATH["Login"]) {
-      debugger; // Active le débogueur pour inspecter l'exécution du code (utile en développement)
       rootDiv.innerHTML = ROUTES({ pathname }); // Charge l'interface utilisateur pour la page Login
       document.body.style.backgroundColor = "#0E5AE5"; // Change le fond de la page en bleu
       new Login({
@@ -106,7 +105,6 @@ export default () => {
   // Gestion de l'affichage au chargement initial de la page
   if (window.location.pathname === "/" && window.location.hash === "") {
     // Si l'utilisateur est sur la page d'accueil
-    debugger;
     new Login({ document, localStorage, onNavigate, PREVIOUS_LOCATION, store }); // Crée une nouvelle instance de Login
     document.body.style.backgroundColor = "#0E5AE5"; // Change le fond en bleu
   } else if (window.location.hash !== "") {

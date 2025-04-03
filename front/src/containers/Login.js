@@ -24,8 +24,10 @@ export default class Login {
     );
     formAdmin.addEventListener("submit", this.handleSubmitAdmin);
   }
+
   handleSubmitEmployee = (e) => {
     e.preventDefault();
+
     const user = {
       type: "Employee",
       email: e.target.querySelector(`input[data-testid="employee-email-input"]`)
@@ -48,6 +50,7 @@ export default class Login {
 
   handleSubmitAdmin = (e) => {
     e.preventDefault();
+
     const user = {
       type: "Admin",
       email: e.target.querySelector(`input[data-testid="admin-email-input"]`)
@@ -100,7 +103,6 @@ export default class Login {
           }),
         })
         .then(() => {
-          console.log(`User with ${user.email} is created`);
           return this.login(user);
         });
     } else {

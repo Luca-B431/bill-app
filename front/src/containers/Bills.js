@@ -56,7 +56,7 @@ export default class {
               };
             } catch (e) {
               // Gestion des erreurs si `formatDate` échoue (ex. : données corrompues)
-              console.log(e, "for", doc); // Affiche l'erreur et la facture concernée
+              // console.log(e, "for", doc); // Affiche l'erreur et la facture concernée
               return {
                 ...doc,
                 date: doc.date, // Garde la date brute en cas d'erreur
@@ -64,7 +64,7 @@ export default class {
               };
             }
           });
-          console.log("length", bills.length); // Affiche le nombre de factures traitées
+          // console.log("length", bills.length); // Affiche le nombre de factures traitées
           return bills; // Retourne le tableau des factures formatées
         });
     }
