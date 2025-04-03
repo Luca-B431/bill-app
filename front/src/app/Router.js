@@ -1,66 +1,71 @@
 // Importation des modules nécessaires
-import store from "./Store.js"; // Gestion des données via l'API
-import Login, { PREVIOUS_LOCATION } from "../containers/Login.js"; // Composant Login
-import Bills from "../containers/Bills.js"; // Composant pour la gestion des factures
-import NewBill from "../containers/NewBill.js"; // Composant pour la création d'une facture
-import Dashboard from "../containers/Dashboard.js"; // Composant du tableau de bord
+import store from "./Store.js"; // Importation du module Store pour la gestion des données via l'API
+import Login, { PREVIOUS_LOCATION } from "../containers/Login.js"; // Importation du composant Login et de la constante PREVIOUS_LOCATION
+import Bills from "../containers/Bills.js"; // Importation du composant Bills pour gérer les factures
+import NewBill from "../containers/NewBill.js"; // Importation du composant NewBill pour créer une nouvelle facture
+import Dashboard from "../containers/Dashboard.js"; // Importation du composant Dashboard pour afficher le tableau de bord
 
-import BillsUI from "../views/BillsUI.js"; // Interface utilisateur des factures
-import DashboardUI from "../views/DashboardUI.js"; // Interface utilisateur du tableau de bord
+import BillsUI from "../views/BillsUI.js"; // Importation de l'interface utilisateur des factures
+import DashboardUI from "../views/DashboardUI.js"; // Importation de l'interface utilisateur du tableau de bord
 
-import { ROUTES, ROUTES_PATH } from "../constants/routes.js"; // Routes de l'application
+import { ROUTES, ROUTES_PATH } from "../constants/routes.js"; // Importation des constantes des routes de l'application
 
 // Fonction principale d'initialisation de l'application
 export default () => {
-  const rootDiv = document.getElementById("root"); // Récupère l'élément HTML où injecter les pages
-  rootDiv.innerHTML = ROUTES({ pathname: window.location.pathname }); // Charge l'interface correspondant à l'URL actuelle
+  const rootDiv = document.getElementById("root"); // Récupère l'élément HTML ayant l'ID 'root' pour y injecter les pages
+  rootDiv.innerHTML = ROUTES({ pathname: window.location.pathname }); // Charge l'interface utilisateur en fonction de l'URL actuelle
 
   // Fonction de navigation entre les différentes pages
   window.onNavigate = (pathname) => {
-    window.history.pushState({}, pathname, window.location.origin + pathname); // Change l'URL sans recharger la page
+    window.history.pushState({}, pathname, window.location.origin + pathname); // Met à jour l'URL sans recharger la page (navigation SPA)
 
+    // Si l'utilisateur navigue vers la page Login
     if (pathname === ROUTES_PATH["Login"]) {
-      rootDiv.innerHTML = ROUTES({ pathname }); // Affichage de la page Login
-      document.body.style.backgroundColor = "#0E5AE5"; // Changement du fond en bleu
+      debugger; // Active le débogueur pour inspecter l'exécution du code (utile en développement)
+      rootDiv.innerHTML = ROUTES({ pathname }); // Charge l'interface utilisateur pour la page Login
+      document.body.style.backgroundColor = "#0E5AE5"; // Change le fond de la page en bleu
       new Login({
         document,
         localStorage,
         onNavigate,
         PREVIOUS_LOCATION,
         store,
-      });
+      }); // Crée une nouvelle instance du composant Login avec les propriétés nécessaires
     } else if (pathname === ROUTES_PATH["Bills"]) {
-      rootDiv.innerHTML = ROUTES({ pathname, loading: true }); // Affichage en mode "chargement"
+      // Si l'utilisateur navigue vers la page des factures
+      rootDiv.innerHTML = ROUTES({ pathname, loading: true }); // Affiche un écran de chargement
 
       // Gestion des icônes actives dans la barre latérale
-      const divIcon1 = document.getElementById("layout-icon1");
-      const divIcon2 = document.getElementById("layout-icon2");
-      divIcon1.classList.add("active-icon");
-      divIcon2.classList.remove("active-icon");
+      const divIcon1 = document.getElementById("layout-icon1"); // Récupère l'élément de l'icône 1
+      const divIcon2 = document.getElementById("layout-icon2"); // Récupère l'élément de l'icône 2
+      divIcon1.classList.add("active-icon"); // Ajoute la classe 'active-icon' à l'icône 1
+      divIcon2.classList.remove("active-icon"); // Retire la classe 'active-icon' de l'icône 2
 
-      const bills = new Bills({ document, onNavigate, store, localStorage });
+      const bills = new Bills({ document, onNavigate, store, localStorage }); // Crée une nouvelle instance du composant Bills
 
-      // Récupération des factures
+      // Récupère les factures
       bills
         .getBills()
         .then((data) => {
-          rootDiv.innerHTML = BillsUI({ data }); // Affichage de la liste des factures
-          new Bills({ document, onNavigate, store, localStorage }); // Réinitialisation du composant Bills
+          rootDiv.innerHTML = BillsUI({ data }); // Affiche la liste des factures via l'interface BillsUI
+          new Bills({ document, onNavigate, store, localStorage }); // Crée une nouvelle instance de Bills après l'affichage des factures
         })
         .catch((error) => {
-          rootDiv.innerHTML = ROUTES({ pathname, error }); // Gestion des erreurs
+          rootDiv.innerHTML = ROUTES({ pathname, error }); // Gère les erreurs en affichant une page d'erreur
         });
     } else if (pathname === ROUTES_PATH["NewBill"]) {
-      rootDiv.innerHTML = ROUTES({ pathname, loading: true });
-      new NewBill({ document, onNavigate, store, localStorage });
+      // Si l'utilisateur navigue vers la page de création d'une nouvelle facture
+      rootDiv.innerHTML = ROUTES({ pathname, loading: true }); // Affiche un écran de chargement
+      new NewBill({ document, onNavigate, store, localStorage }); // Crée une nouvelle instance du composant NewBill
 
       // Gestion des icônes actives
-      const divIcon1 = document.getElementById("layout-icon1");
-      const divIcon2 = document.getElementById("layout-icon2");
-      divIcon1.classList.remove("active-icon");
-      divIcon2.classList.add("active-icon");
+      const divIcon1 = document.getElementById("layout-icon1"); // Récupère l'élément de l'icône 1
+      const divIcon2 = document.getElementById("layout-icon2"); // Récupère l'élément de l'icône 2
+      divIcon1.classList.remove("active-icon"); // Retire la classe 'active-icon' de l'icône 1
+      divIcon2.classList.add("active-icon"); // Ajoute la classe 'active-icon' à l'icône 2
     } else if (pathname === ROUTES_PATH["Dashboard"]) {
-      rootDiv.innerHTML = ROUTES({ pathname, loading: true });
+      // Si l'utilisateur navigue vers le tableau de bord
+      rootDiv.innerHTML = ROUTES({ pathname, loading: true }); // Affiche un écran de chargement
 
       const bills = new Dashboard({
         document,
@@ -68,82 +73,88 @@ export default () => {
         store,
         bills: [],
         localStorage,
-      });
+      }); // Crée une nouvelle instance du composant Dashboard
 
-      // Récupération de toutes les factures pour le tableau de bord
+      // Récupère toutes les factures pour afficher le tableau de bord
       bills
         .getBillsAllUsers()
         .then((bills) => {
-          rootDiv.innerHTML = DashboardUI({ data: { bills } });
-          new Dashboard({ document, onNavigate, store, bills, localStorage });
+          rootDiv.innerHTML = DashboardUI({ data: { bills } }); // Affiche l'interface du tableau de bord avec les factures
+          new Dashboard({ document, onNavigate, store, bills, localStorage }); // Crée une nouvelle instance de Dashboard après l'affichage
         })
         .catch((error) => {
-          rootDiv.innerHTML = ROUTES({ pathname, error }); // Gestion des erreurs
+          rootDiv.innerHTML = ROUTES({ pathname, error }); // Gère les erreurs en affichant une page d'erreur
         });
     }
   };
 
   // Gestion des retours en arrière dans l'historique du navigateur
   window.onpopstate = (e) => {
-    const user = JSON.parse(localStorage.getItem("user"));
+    const user = JSON.parse(localStorage.getItem("user")); // Récupère l'utilisateur actuel depuis le localStorage
 
     // Si l'utilisateur est sur la page d'accueil sans être connecté
     if (window.location.pathname === "/" && !user) {
-      document.body.style.backgroundColor = "#0E5AE5";
-      rootDiv.innerHTML = ROUTES({ pathname: window.location.pathname });
+      document.body.style.backgroundColor = "#0E5AE5"; // Change le fond en bleu
+      rootDiv.innerHTML = ROUTES({ pathname: window.location.pathname }); // Recharge l'interface de la page d'accueil
     }
-    // Si un utilisateur est connecté, revenir à la page précédente
+    // Si un utilisateur est connecté, revient à la page précédente
     else if (user) {
-      onNavigate(PREVIOUS_LOCATION);
+      onNavigate(PREVIOUS_LOCATION); // Navigue vers la dernière page visitée
     }
   };
 
   // Gestion de l'affichage au chargement initial de la page
   if (window.location.pathname === "/" && window.location.hash === "") {
-    new Login({ document, localStorage, onNavigate, PREVIOUS_LOCATION, store });
-    document.body.style.backgroundColor = "#0E5AE5";
+    // Si l'utilisateur est sur la page d'accueil
+    debugger;
+    new Login({ document, localStorage, onNavigate, PREVIOUS_LOCATION, store }); // Crée une nouvelle instance de Login
+    document.body.style.backgroundColor = "#0E5AE5"; // Change le fond en bleu
   } else if (window.location.hash !== "") {
+    // Si un hash est présent dans l'URL (page spécifique)
+
     if (window.location.hash === ROUTES_PATH["Bills"]) {
+      // Si l'utilisateur est sur la page des factures
       rootDiv.innerHTML = ROUTES({
         pathname: window.location.hash,
         loading: true,
-      });
+      }); // Affiche un écran de chargement
 
       // Gestion des icônes actives
-      const divIcon1 = document.getElementById("layout-icon1");
-      const divIcon2 = document.getElementById("layout-icon2");
-      divIcon1.classList.add("active-icon");
-      divIcon2.classList.remove("active-icon");
+      const divIcon2 = document.getElementById("layout-icon2"); // Récupère l'élément de l'icône 2
+      divIcon2.classList.remove("active-icon"); // Retire la classe 'active-icon' de l'icône 2
 
-      const bills = new Bills({ document, onNavigate, store, localStorage });
+      const bills = new Bills({ document, onNavigate, store, localStorage }); // Crée une nouvelle instance du composant Bills
 
-      // Récupération des factures
+      // Récupère les factures
       bills
         .getBills()
         .then((data) => {
-          rootDiv.innerHTML = BillsUI({ data });
-          new Bills({ document, onNavigate, store, localStorage });
+          rootDiv.innerHTML = BillsUI({ data }); // Affiche la liste des factures
+          new Bills({ document, onNavigate, store, localStorage }); // Crée une nouvelle instance de Bills après l'affichage des factures
         })
         .catch((error) => {
-          rootDiv.innerHTML = ROUTES({ pathname: window.location.hash, error });
+          rootDiv.innerHTML = ROUTES({ pathname: window.location.hash, error }); // Gère les erreurs en affichant une page d'erreur
         });
     } else if (window.location.hash === ROUTES_PATH["NewBill"]) {
+      // Si l'utilisateur est sur la page de création d'une nouvelle facture
+
       rootDiv.innerHTML = ROUTES({
         pathname: window.location.hash,
         loading: true,
-      });
-      new NewBill({ document, onNavigate, store, localStorage });
+      }); // Affiche un écran de chargement
+      new NewBill({ document, onNavigate, store, localStorage }); // Crée une nouvelle instance du composant NewBill
 
       // Gestion des icônes actives
-      const divIcon1 = document.getElementById("layout-icon1");
-      const divIcon2 = document.getElementById("layout-icon2");
-      divIcon1.classList.remove("active-icon");
-      divIcon2.classList.add("active-icon");
+      const divIcon1 = document.getElementById("layout-icon1"); // Récupère l'élément de l'icône 1
+      const divIcon2 = document.getElementById("layout-icon2"); // Récupère l'élément de l'icône 2
+      divIcon1.classList.remove("active-icon"); // Retire la classe 'active-icon' de l'icône 1
+      divIcon2.classList.add("active-icon"); // Ajoute la classe 'active-icon' à l'icône 2
     } else if (window.location.hash === ROUTES_PATH["Dashboard"]) {
+      // Si l'utilisateur est sur le tableau de bord
       rootDiv.innerHTML = ROUTES({
         pathname: window.location.hash,
         loading: true,
-      });
+      }); // Affiche un écran de chargement
 
       const bills = new Dashboard({
         document,
@@ -151,20 +162,20 @@ export default () => {
         store,
         bills: [],
         localStorage,
-      });
+      }); // Crée une nouvelle instance du composant Dashboard
 
-      // Récupération des factures pour le tableau de bord
+      // Récupère toutes les factures pour afficher le tableau de bord
       bills
         .getBillsAllUsers()
         .then((bills) => {
-          rootDiv.innerHTML = DashboardUI({ data: { bills } });
-          new Dashboard({ document, onNavigate, store, bills, localStorage });
+          rootDiv.innerHTML = DashboardUI({ data: { bills } }); // Affiche l'interface du tableau de bord avec les factures
+          new Dashboard({ document, onNavigate, store, bills, localStorage }); // Crée une nouvelle instance de Dashboard après l'affichage
         })
         .catch((error) => {
-          rootDiv.innerHTML = ROUTES({ pathname: window.location.hash, error });
+          rootDiv.innerHTML = ROUTES({ pathname: window.location.hash, error }); // Gère les erreurs en affichant une page d'erreur
         });
     }
   }
 
-  return null; // La fonction ne retourne rien d'affiché directement
+  return null; // La fonction ne retourne rien directement, elle modifie uniquement le DOM
 };

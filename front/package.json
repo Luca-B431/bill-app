@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "front app for billapp",
   "scripts": {
-    "test": "jest --coverage --noStackTrace --silent",
+    "test": "jest --coverage --noStackTrace",
     "dev": "npx vite"
   },
   "jest": {

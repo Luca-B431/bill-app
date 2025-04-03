@@ -2,6 +2,7 @@ import { ROUTES_PATH } from "../constants/routes.js";
 import { formatDate, formatStatus } from "../app/format.js";
 import Logout from "./Logout.js";
 
+// Icon click et newBill click management
 export default class {
   constructor({ document, onNavigate, store, localStorage }) {
     this.document = document;
@@ -20,10 +21,12 @@ export default class {
     new Logout({ document, localStorage, onNavigate });
   }
 
+  // Fonction pour gérer le clic sur le bouton "Nouvelle facture"
   handleClickNewBill = () => {
     this.onNavigate(ROUTES_PATH["NewBill"]);
   };
 
+  // Fonction pour gérer le clic sur l'icône de l'œil
   handleClickIconEye = (icon) => {
     const billUrl = icon.getAttribute("data-bill-url");
     const imgWidth = Math.floor($("#modaleFile").width() * 0.5);
@@ -35,32 +38,34 @@ export default class {
     $("#modaleFile").modal("show");
   };
 
+  // OK, fonctionnel, tableau des bills avec data, map list
   getBills = () => {
+    // Vérifie si l'objet `store` est défini
     if (this.store) {
       return this.store
-        .bills()
-        .list()
+        .bills() // Appelle la méthode `bills()` pour récupérer les factures
+        .list() // Récupère la liste des factures sous forme de promesse
         .then((snapshot) => {
+          // `snapshot` est un tableau d'objets représentant les factures
           const bills = snapshot.map((doc) => {
             try {
               return {
-                ...doc,
-                date: formatDate(doc.date),
-                status: formatStatus(doc.status),
+                ...doc, // Copie toutes les propriétés de `doc`
+                date: formatDate(doc.date), // Formate la date
+                status: formatStatus(doc.status), // Formate le statut
               };
             } catch (e) {
-              // if for some reason, corrupted data was introduced, we manage here failing formatDate function
-              // log the error and return unformatted date in that case
-              console.log(e, "for", doc);
+              // Gestion des erreurs si `formatDate` échoue (ex. : données corrompues)
+              console.log(e, "for", doc); // Affiche l'erreur et la facture concernée
               return {
                 ...doc,
-                date: doc.date,
-                status: formatStatus(doc.status),
+                date: doc.date, // Garde la date brute en cas d'erreur
+                status: formatStatus(doc.status), // Continue à formater le statut
               };
             }
           });
-          console.log("length", bills.length);
-          return bills;
+          console.log("length", bills.length); // Affiche le nombre de factures traitées
+          return bills; // Retourne le tableau des factures formatées
         });
     }
   };
