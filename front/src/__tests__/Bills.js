@@ -11,6 +11,7 @@ import Bills from "../containers/Bills.js";
 import { ROUTES } from "../constants/routes.js";
 import { ROUTES_PATH } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
+import { formatDate, formatStatus } from "../app/format";
 
 import router from "../app/Router.js";
 
@@ -34,13 +35,15 @@ describe("Given I am connected as an employee", () => {
       // OK
       window.onNavigate(ROUTES_PATH.Bills);
 
-      // TEST HIGHLGHTED AJOUT POUR LE KANBAN
+      // TEST
+      // Vérification de la classe "active-icon" l'icône fenêtre
       await waitFor(() => screen.getByTestId("icon-window"));
       const windowIcon = screen.getByTestId("icon-window");
       const highlightedIcon = windowIcon.classList.contains("active-icon");
       expect(highlightedIcon).toBe(true);
     });
 
+    // Liste classé par ordre (TEST NON MODIFIE)
     test("Then bills should be ordered from earliest to latest", () => {
       document.body.innerHTML = BillsUI({ data: bills });
       const dates = screen
@@ -53,12 +56,15 @@ describe("Given I am connected as an employee", () => {
       expect(dates).toEqual(datesSorted);
     });
 
+    // TEST
+    // Les icones possèdent un attribut data-bill-url qui contient l'URL du fichier correspondant
     test("Then icons should get the right URL", async () => {
       const html = BillsUI({ data: bills });
       document.body.innerHTML = html;
       await waitFor(() => screen.getAllByTestId("icon-eye"));
       const eyes = screen.getAllByTestId("icon-eye");
       expect(eyes.length).toBe(4);
+
       eyes.forEach((eye, index) => {
         expect(eye.getAttribute("data-bill-url")).toBe(
           `${bills[index].fileUrl}`
@@ -68,15 +74,32 @@ describe("Given I am connected as an employee", () => {
 
     test("Then I click on the icon eye and a modal should open", () => {
       document.body.innerHTML = BillsUI({ data: bills });
-      const handleClickIconEye = jest.fn((e) => e.stopPropagation());
+
+      const onNavigate = jest.fn();
+      const billsContainer = new Bills({
+        document,
+        onNavigate,
+        store: null,
+        localStorage: window.localStorage,
+      });
+
+      // mock modale testée, dans handleClickIconEye
+      $.fn.modal = jest.fn();
+
       const eyes = screen.getAllByTestId("icon-eye");
       eyes.forEach((eye) => {
+        const handleClickIconEye = jest.fn(() =>
+          billsContainer.handleClickIconEye(eye)
+        );
         eye.addEventListener("click", handleClickIconEye);
         fireEvent.click(eye);
+        expect(handleClickIconEye).toHaveBeenCalled();
+        expect($.fn.modal).toHaveBeenCalledWith("show");
       });
-      expect(handleClickIconEye).toHaveBeenCalled();
     });
 
+    // TEST
+    // Vérification que le clic sur le bouton "Nouvelle note de frais" redirige vers la page de création de note de frais
     test("then I click on the button new bill, I should be sent to new bill page", () => {
       const html = BillsUI({ data: [] });
       document.body.innerHTML = html;
@@ -97,40 +120,21 @@ describe("Given I am connected as an employee", () => {
       expect(screen.getByTestId("form-new-bill")).toBeTruthy();
     });
   });
-
-  test("Then I click on the icon eye and a modal should open", () => {
-    document.body.innerHTML = BillsUI({ data: bills });
-
-    // Mock de la fonction qui gère le clic sur l'icône de l'œil
-    const handleClickIconEye = jest.fn((e) => e.stopPropagation());
-    const eyes = screen.getAllByTestId("icon-eye");
-
-    // Ajouter un listener pour chaque icône d'œil
-    eyes.forEach((eye) => {
-      eye.addEventListener("click", handleClickIconEye);
-      fireEvent.click(eye); // Simuler un clic
-    });
-
-    // Vérifier que le clic a bien déclenché la méthode
-    expect(handleClickIconEye).toHaveBeenCalled();
-  });
 });
 
-import BillsManager from "../containers/Bills"; // j'importe la class qui contient la méthode getBills
-import { formatDate, formatStatus } from "../app/format"; // j'importe les fonctions de formatage
-
-// Mock des fonctions de formatage
+// Mock des fonctions de formatage, import nécessaire pour Jest
 jest.mock("../app/format", () => ({
   formatDate: jest.fn(),
   formatStatus: jest.fn(),
 }));
 
-describe("test getBills out of BillsManager", () => {
+describe("getBills method", () => {
   let billsManager;
   let store;
 
+  // Setup de la méthode getBills
   beforeEach(() => {
-    // Mock du store qui retourne une liste fictive de factures
+    // Mock de l'instance de store
     store = {
       bills: jest.fn().mockReturnValue({
         list: jest.fn().mockResolvedValue([
@@ -144,8 +148,8 @@ describe("test getBills out of BillsManager", () => {
     formatDate.mockImplementation((date) => `Formatted Date: ${date}`);
     formatStatus.mockImplementation((status) => `Formatted Status: ${status}`);
 
-    // Création de l'instance de BillsManager
-    billsManager = new BillsManager({
+    // Création de l'instance
+    billsManager = new Bills({
       document: document,
       onNavigate: jest.fn(),
       store,
@@ -154,9 +158,10 @@ describe("test getBills out of BillsManager", () => {
   });
 
   it("should return a list of formatted bills", async () => {
+    // On récupère la méthode GetBills de sa classe
     const bills = await billsManager.getBills();
 
-    // Vérifie que les factures retournées sont bien formatées
+    // TESTS
     expect(bills).toEqual([
       {
         date: "Formatted Date: 2025-04-01",
@@ -168,15 +173,14 @@ describe("test getBills out of BillsManager", () => {
       },
     ]);
 
-    // Vérifie que les fonctions de formatage ont été appelées avec les bonnes données
     expect(formatDate).toHaveBeenCalledWith("2025-04-01");
     expect(formatStatus).toHaveBeenCalledWith("pending");
     expect(formatDate).toHaveBeenCalledWith("2025-04-02");
     expect(formatStatus).toHaveBeenCalledWith("approved");
   });
 
+  // Ici, on teste le comportement de la méthode getBills lorsque formatDate lève une erreur
   it("should log an error and return raw data if formatDate throws an error", async () => {
-    // Simule une erreur dans formatDate
     formatDate.mockImplementation(() => {
       throw new Error("Date format error");
     });
@@ -188,13 +192,13 @@ describe("test getBills out of BillsManager", () => {
       { date: "2025-04-01", status: "Formatted Status: pending" },
       { date: "2025-04-02", status: "Formatted Status: approved" },
     ]);
-
-    // Vérifie que l'erreur a été loggée dans la console (tu peux aussi vérifier l'appel de console.log si nécessaire)
-    // Utilise jest.spyOn pour espionner console.log si nécessaire
   });
 });
 
 // Test GET Bills API
+// On va tester simplement que la méthode bills de l'objet store
+// est appelée une fois et que la liste des factures est retournée avec succès
+// et que la longueur de cette liste est de 4
 describe("Given I am a user connected as Employee", () => {
   describe("When I navigate to Bills Page", () => {
     test("fetches bills from mock API GET", async () => {
@@ -205,6 +209,7 @@ describe("Given I am a user connected as Employee", () => {
     });
   });
 
+  // Messages d'erreurs API 404-500
   describe("When an error occurs on API", () => {
     beforeEach(() => {
       jest.spyOn(store, "bills");
@@ -220,6 +225,8 @@ describe("Given I am a user connected as Employee", () => {
       );
     });
 
+    // store.bills ne renvoit pas l'objet liste
+    // on rentre l'erreur 404 et la 500 en paramètres sur BillsUI
     test("fetches bills from an API and fails with 404 message error", async () => {
       store.bills.mockImplementationOnce(() => ({
         list: () => Promise.reject(new Error("Erreur 404")),
