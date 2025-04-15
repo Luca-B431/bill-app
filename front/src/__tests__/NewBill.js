@@ -30,6 +30,7 @@ describe("Given I am connected as an employee", () => {
     jest.clearAllMocks();
   });
 
+  // On vérifie que le formulaire est bien affiché
   describe("When I am on NewBill Page", () => {
     test("Then the form should be rendered", () => {
       const html = NewBillUI();
@@ -53,8 +54,16 @@ describe("Given I am connected as an employee", () => {
       const handleChangeFile = jest.fn(newBill.handleChangeFile);
       fileInput.addEventListener("change", handleChangeFile);
 
-      const validFile = new File(["image"], "image.png", { type: "image/png" });
-      fireEvent.change(fileInput, { target: { files: [validFile] } });
+      // format valides
+      const validFiles = [
+        new File(["image"], "image.png", { type: "image/png" }),
+        new File(["image"], "image.jpg", { type: "image/jpeg" }),
+        new File(["image"], "image.jpeg", { type: "image/jpeg" }),
+      ];
+
+      fireEvent.change(fileInput, {
+        target: { files: validFiles },
+      });
       expect(handleChangeFile).toHaveBeenCalled();
       expect(fileInput.files[0].name).toBe("image.png");
 
@@ -137,6 +146,7 @@ describe("Given I am connected as an employee", () => {
         }),
         selector: newBill.billId,
       });
+
       expect(onNavigate).toHaveBeenCalledWith(ROUTES_PATH["Bills"]);
     });
   });
