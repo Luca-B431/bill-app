@@ -43,7 +43,7 @@ describe("Given I am connected as an employee", () => {
       expect(highlightedIcon).toBe(true);
     });
 
-    // Liste classé par ordre (TEST NON MODIFIE)
+    // Liste classé par ordre décroissant
     test("Then bills should be ordered from earliest to latest", () => {
       document.body.innerHTML = BillsUI({ data: bills });
       const dates = screen
@@ -51,7 +51,7 @@ describe("Given I am connected as an employee", () => {
           /^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/i
         )
         .map((a) => a.innerHTML);
-      const antiChrono = (a, b) => (a < b ? 1 : 0);
+      const antiChrono = (a, b) => new Date(b) - new Date(a);
       const datesSorted = [...dates].sort(antiChrono);
       expect(dates).toEqual(datesSorted);
     });
@@ -63,11 +63,13 @@ describe("Given I am connected as an employee", () => {
       document.body.innerHTML = html;
       await waitFor(() => screen.getAllByTestId("icon-eye"));
       const eyes = screen.getAllByTestId("icon-eye");
-      expect(eyes.length).toBe(4);
+      expect(eyes.length).toBe(bills.length);
+
+      const billsSorted = bills.sort((a, b) => (a.date < b.date ? 1 : -1));
 
       eyes.forEach((eye, index) => {
         expect(eye.getAttribute("data-bill-url")).toBe(
-          `${bills[index].fileUrl}`
+          `${billsSorted[index].fileUrl}`
         );
       });
     });
